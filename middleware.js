@@ -1,28 +1,26 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
 
 export async function middleware(request) {
-    const session = await getServerSession(authOptions);
+  // Decode JWT to check if user is authenticated
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
 
-    // Check if the request is to an admin route
-    const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
+  // Determine if the request is for an admin route
+  const isAdminRoute = request.nextUrl.pathname.startswith("/admin");
 
-    if (isAdminRoute && !session) {
-        // If user is not logged in and trying to access an admin route, redirect to login
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
+  if (isAdminRoute && !token) {
+    // If user is not authenticated and trying to access an admin route, redirect to login
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
 
-    if (!isAdminRoute && session) {
-        // If user is logged in and tries to access a non-admin route, redirect to admin dashboard
-        return NextResponse.redirect(new URL('/admin/dashboard', request.url));
-    }
-
-    // If the user is logged in and accessing an admin route or not logged in and accessing a non-admin route, allow the request
-    return NextResponse.next();
+  // Allow request if user is authenticated or it's not an admin route
+  return NextResponse.next();
 }
 
-// Specify the paths to apply the middleware
+// Configure matcher for middleware
 export const config = {
-    matcher: ['/admin/:path*', '/login/:path*'], // Apply to all admin and login routes
+  matcher: ["/admin/:path*"], // Apply middleware only to admin routes
 };

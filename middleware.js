@@ -8,12 +8,15 @@ export async function middleware(request) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  console.log("Token from getToken:", token); // Should display token or null
+  console.log("Request Path:", request.nextUrl.pathname);
+  
   // Determine if the request is for an admin route
-  const isAdminRoute = request.nextUrl.pathname.startswith("/admin");
+  const isAdminRoute = request.nextUrl.pathname.startsWith("/admin");
 
   if (isAdminRoute && !token) {
     // If user is not authenticated and trying to access an admin route, redirect to login
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.rewrite(new URL("/login", request.url));
   }
 
   // Allow request if user is authenticated or it's not an admin route

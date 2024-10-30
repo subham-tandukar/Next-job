@@ -1,7 +1,5 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import SessionProviderWrapper from "@/components/admin/sessionProvider";
-import AdminLayout from "@/components/admin/layout";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,9 +23,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProviderWrapper>
-          <AdminLayout>{children}</AdminLayout>
-        </SessionProviderWrapper>
+        {children}
       </body>
     </html>
   );

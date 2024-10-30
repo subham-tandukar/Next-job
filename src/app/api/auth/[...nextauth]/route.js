@@ -30,14 +30,23 @@ export const authOptions = {
             throw new Error("Invalid credentials"); // Throw an error for non-2xx status codes
           }
 
-          const user = await response.json();
-
-          // If no error and we have a user, return it
-          if (user && user.id) {
-            return user; // Return user object
-          } else {
-            throw new Error("User not found"); // Throw an error if user not found
+          let responseData;
+          try {
+            responseData = await res.json();
+          } catch (err) {
+            console.error("Non-JSON response received:", err);
+            throw new Error(
+              "Server is currently unavailable. Please try again later."
+            );
           }
+
+          // Check if the API response contains an error message
+          if (!res.ok || responseData.error) {
+            throw new Error(
+              responseData.error?.message || "An unknown error occurred."
+            );
+          }
+          return { ...responseData };
         } catch (error) {
           // Log the error for debugging purposes
           console.error("Authentication Error:", error);
@@ -70,4 +79,4 @@ export const authOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST };

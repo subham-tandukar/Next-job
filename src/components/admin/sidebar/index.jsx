@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./Sidebar.module.scss";
 
 export default function AdminSidebar() {
   return (
@@ -45,9 +46,13 @@ export default function AdminSidebar() {
         </a>
       </div>
 
-      <div className="h-[calc(100%-80px)]">
-        <div className="sidebar__wrapper">
-
+      <div className="h-[calc(100%-72px)]">
+        <div className={styles["sidebar__wrapper"]}>
+          <div className="mt-4 pb-3 3xl:mt-6">
+            <h6 className="mb-2 truncate px-6 text-xs font-normal uppercase tracking-widest text-gray-500 2xl:px-8">
+                menu
+            </h6>
+          </div>
         </div>
       </div>
     </aside>

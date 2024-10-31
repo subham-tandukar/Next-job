@@ -45,7 +45,11 @@ export default function AdminSidebar() {
         </a>
       </div>
 
-      <div className="h-[calc(100%-80px)]"></div>
+      <div className="h-[calc(100%-80px)]">
+        <div className="sidebar__wrapper">
+
+        </div>
+      </div>
     </aside>
   );
 }

@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { validateError } from "@/helper/validateError";
 
 export default function LoginPage() {
   const { data: session } = useSession();
@@ -21,38 +22,42 @@ export default function LoginPage() {
 
   const [error, setError] = useState("");
 
-  const validateError = (values) => {
-    const errors = {};
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
-
-    if (!values.email) {
-      errors.email = "Required";
-    }else if (!regex.test(values.email)) {
-      errors.email = "This is not a valid email format";
-    }
-
-    if (!values.password) {
-      errors.password = "Required";
-    }
-  
-    return errors;
-  };
+  // Map formValues to match the structure required by validateError
+  const valuesToValidate = [
+    { name: "email", value: formValues.email },
+    { name: "password", value: formValues.password },
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
+
+    // Update validation on each change
+    if (isSubmit) {
+      // Validate the field that is being changed
+      const fieldToValidate = [{ name, value }];
+
+      const fieldError = validateError(fieldToValidate);
+
+      // Update formError state with only the specific field’s error
+      setFormError((prevErrors) => ({
+        ...prevErrors,
+        ...fieldError,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setFormError(validateError(formValues));
+    setFormError(validateError(valuesToValidate));
     setIsSubmit(true);
+    
   };
 
   const submitData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const result = await signIn("credentials", {
         ...formValues,
         redirect: false,
@@ -69,12 +74,13 @@ export default function LoginPage() {
       );
     } finally {
       setIsSubmit(false);
-      setLoading(false)
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (Object.keys(formError).length === 0 && isSubmit) {
+    const hasNoError = Object.values(formError).every((error) => error === "");
+    if (hasNoError && isSubmit) {
       submitData();
     }
   }, [formError]);
@@ -83,28 +89,34 @@ export default function LoginPage() {
     <form onSubmit={handleSubmit}>
       <h1>Login</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <label>
-        Email:
-        <input
-          type="text"
-          name="email"
-          value={formValues.email}
-          onChange={handleChange}
-        />
-      </label>
-      {formError.email && <p style={{ color: "red" }}>{formError.email}</p>}
-      <label>
-        Password:
-        <input
-          type="password"
-          name="password"
-          value={formValues.password}
-          onChange={handleChange}
-        />
-      </label>
-      {formError.password && (
-        <p style={{ color: "red" }}>{formError.password}</p>
-      )}
+      <div>
+        <label>
+          Email:
+          <input
+            type="text"
+            name="email"
+            value={formValues.email}
+            onChange={handleChange}
+          />
+        </label>
+        {formError.email && <p style={{ color: "red" }}>{formError.email}</p>}
+      </div>
+
+      <div>
+        <label>
+          Password:
+          <input
+            type="password"
+            name="password"
+            value={formValues.password}
+            onChange={handleChange}
+          />
+        </label>
+        {formError.password && (
+          <p style={{ color: "red" }}>{formError.password}</p>
+        )}
+      </div>
+
       <button type="submit">{loading ? "Please Wait" : "Login"}</button>
     </form>
   );

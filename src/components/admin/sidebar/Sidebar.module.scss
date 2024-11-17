@@ -1,5 +1,43 @@
 .sidebar__wrapper {
-  @apply bg-red-500 h-full ;
+  @apply h-full overflow-auto;
 
- 
+  &::-webkit-scrollbar-track {
+    -webkit-box-shadow: none;
+    border-radius: 10px;
+    background: #ffffff00;
+  }
+
+  &::-webkit-scrollbar {
+    width: 4px;
+    background: #ffffff00;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: none;
+    @apply bg-gray-400;
+  }
+
+  .menu__title {
+    @apply mb-2 truncate px-6 text-xs font-normal uppercase tracking-widest text-gray-500 2xl:px-8;
+  }
+  .menu__item {
+    @apply relative mx-3 my-0.5 flex items-center justify-between rounded-md px-3 py-2 font-medium capitalize lg:my-1 2xl:mx-5 2xl:my-2 text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-700/90;
+
+   
+    .menu__icon {
+      @apply me-2 inline-flex size-5 items-center justify-center rounded-md [&>svg]:size-5 text-gray-800 dark:text-gray-500;
+    }
+    .menu__link {
+      @apply truncate;
+    }
+
+    &.active {
+      @apply hover:bg-transparent before:top-1/2 before:-translate-y-1/2 text-primary before:absolute before:-start-3 before:block before:h-4/5 before:w-1 before:rounded-ee-md before:rounded-se-md before:bg-primary 2xl:before:-start-5;
+
+      .menu__icon{
+        @apply text-primary
+      }
+    }
+  }
 }

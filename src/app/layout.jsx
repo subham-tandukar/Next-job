@@ -1,12 +1,15 @@
 import { Lexend_Deca, Inter } from "next/font/google";
 import "./globals.css";
-
+import { Toaster } from "@/components/ui/sonner";
+import StoreProvider from "@/components/shared/storeProvider";
 const lexend = Lexend_Deca({
   subsets: ["latin"],
   variable: "--font-lexend",
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 const inter = Inter({
+  subsets: ["latin"], // Specify the subset you need
+  preload: true, // Enable font preloading
   variable: "--font-inter",
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
@@ -20,7 +23,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${lexend.variable} ${inter.variable} antialiased`}>
-        {children}
+        <Toaster />
+        <StoreProvider>{children}</StoreProvider>
       </body>
     </html>
   );

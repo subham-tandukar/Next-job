@@ -1,3 +1,4 @@
+import { base_url } from "@/utils/apiUrl";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -11,28 +12,21 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         try {
-          const response = await fetch(
-            "https://genesisapi.popmanteau.com/api/v1/login",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
+          const response = await fetch(`${base_url}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
           const responseData = await response.json();
-          if (response.status === 500) {
-            // Handle server error with a custom message
-            throw new Error("Internal Server Error. Please try again later.");
-          }
 
           // Check if the API response contains an error message
-          if (!response.ok || responseData.error) {
+          if (!response.ok) {
             throw new Error(
-              responseData.errors?.message || "An unknown error occurred."
+              responseData?.message || "An unknown error occurred."
             );
           }
 
@@ -49,12 +43,14 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Attach user data to the token
       if (user) {
-        token.user = user.response;
+        token.user = user.data;
       }
       return token;
     },
     async session({ session, token }) {
+      // Expose token data in the session
       if (token) {
         session.user = token.user;
       }

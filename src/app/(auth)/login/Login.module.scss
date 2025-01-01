@@ -1,0 +1,35 @@
+.form {
+  @apply min-h-[100vh] p-10 flex justify-center items-center;
+  .form__container {
+    @apply p-8 rounded-md w-full max-w-[500px] relative bg-white;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+
+    &::before {
+      @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[-1] animate-in;
+      content: url("../../../../public/images/blob.png");
+    }
+  }
+  .form__msg {
+    @apply text-sm font-medium py-2 px-3 mb-5 rounded-md;
+  }
+  .form__error {
+    @apply text-sm font-medium text-destructive mt-1;
+  }
+
+  .form__wrapper {
+    > div:not(:last-child) {
+      @apply mb-4;
+    }
+
+    .input__icon {
+      @apply relative;
+      input {
+        @apply pl-14;
+      }
+
+      .form__icon {
+        @apply pl-1 w-12 h-6 top-1/2 -translate-y-1/2 border-r border-solid border-r-[hsl(var(--input))]  absolute rounded-s-md leading-9 flex items-center justify-center text-black text-lg;
+      }
+    }
+  }
+}

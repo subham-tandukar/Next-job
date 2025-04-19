@@ -154,7 +154,7 @@ export async function PATCH(req) {
       return handleErrorResponse(new Error("Category ID is required"), 400);
     }
 
-    const allowedFields = ["category", "status"];
+    const allowedFields = ["category"];
     const updates = [];
     const values = [];
 
@@ -241,6 +241,39 @@ export async function PATCH(req) {
     return handleSuccessResponse(
       { id: catId, ...data, image: newImageUrl || data.image },
       "Category updated successfully",
+      200
+    );
+  } catch (error) {
+    return handleErrorResponse(error, 500);
+  }
+}
+
+export async function PUT(req) {
+  try {
+    const data = await req.json();
+    const catId = data.id;
+    const status = data.status;
+
+    // Check if category ID is provided
+    if (!catId) {
+      return handleErrorResponse(new Error("Category ID is required"), 400);
+    }
+
+    // Validate required fields
+    if (!status) {
+      return handleErrorResponse(new Error("Status is required"), 400);
+    }
+
+    const query = `UPDATE category SET status = ? WHERE id = ?`;
+    const result = await dbQuery(query, [status, catId]);
+
+    if (result.affectedRows === 0) {
+      return handleErrorResponse(new Error("Category not found"), 404);
+    }
+
+    return handleSuccessResponse(
+      { id: catId, status },
+      "Category status updated successfully",
       200
     );
   } catch (error) {

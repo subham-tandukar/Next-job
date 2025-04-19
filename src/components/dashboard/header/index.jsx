@@ -12,7 +12,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import ConfirmModal from "../../dashboard/modal/confirmModal";
+import ConfirmModal from "../modal/confirmModal";
 import { FaUserCircle } from "react-icons/fa";
 
 export default function AdminHeader() {

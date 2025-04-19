@@ -1,58 +1,28 @@
 "use client";
 
-import {
-  ArrowUpDown,
-  CircleCheck,
-  ClipboardPenLine,
-  Eye,
-  Loader2,
-  Pencil,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { ArrowUpDown, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
-import { FaTrashAlt } from "react-icons/fa";
 import { DataTable } from "@/components/dashboard/dataTable";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { base_url } from "@/utils/apiUrl";
-import ShowToaster from "@/components/dashboard/toast";
 import AddCategory from "./addCategory";
 import EditCategory from "./editCategory";
 import Image from "next/image";
-import Fancybox from "@/components/dashboard/fancybox";
 import { useAppSelector } from "@/lib/store/hooks";
 import { useDispatch } from "react-redux";
 import { fetchData } from "@/lib/store/features/category/categoryApi";
+import {
+  ActionColumn,
+  ImageColumn,
+  SelectColumnCell,
+  SelectColumnHeader,
+  StatusColumn,
+} from "@/components/dashboard/tableColumn";
+import { deleteDataApi, updateStatusApi } from "@/hooks/useApi";
 
 export default function CategoryList() {
-  // const [data, setData] = useState([]);
-  // const [loading, setLoading] = useState(true);
-
   const formValues = {
     category: "",
     status: "",
@@ -74,65 +44,21 @@ export default function CategoryList() {
 
   const dispatch = useDispatch();
   const { data, error, loading } = useAppSelector((state) => state.category);
-  const getData = async () => {
-    // try {
-    //   const response = await axios.get(`${base_url}/category?status=${status}`);
-    //   const result = response.data;
-    //   if (result.success) {
-    //     setData(result.data);
-    //   }
-    // } catch (error) {
-    //   console.error("Error fetching data:", error.message);
-    //   setData([]);
-    // } finally {
-    //   setLoading(false);
-    // }
+  const getData = () => {
+    dispatch(fetchData(status));
   };
 
-  // useEffect(() => {
-  //   getData();
-  // }, [status]);
-
   useEffect(() => {
-    dispatch(fetchData(status));
+    getData();
   }, [dispatch, status]);
 
   const columns = [
     {
-      id: "select",
+      accessorKey: "select",
       header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => {
-            table.toggleAllPageRowsSelected(!!value);
-            const allRowIds = table
-              .getRowModel()
-              .rows.map((row) => row.original.id);
-            setBulkId(value ? allRowIds : []);
-          }}
-          aria-label="Select all"
-          className="block -mt-[3] ml-2"
-        />
+        <SelectColumnHeader table={table} setBulkId={setBulkId} />
       ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => {
-            const id = row.original.id;
-            setBulkId((prev) =>
-              value
-                ? [...new Set([...prev, id])]
-                : prev.filter((item) => item !== id)
-            );
-            row.toggleSelected(!!value);
-          }}
-          aria-label="Select row"
-          className="block -mt-[3] ml-2"
-        />
-      ),
+      cell: ({ row }) => <SelectColumnCell row={row} setBulkId={setBulkId} />,
       enableSorting: false,
       enableHiding: false,
       width: "40px",
@@ -148,34 +74,21 @@ export default function CategoryList() {
       accessorKey: "image",
       header: () => <div className="text-center">Image</div>,
       width: "80px",
-      cell: ({ row }) => (
-        <Fancybox
-          options={{
-            Carousel: {
-              infinite: false,
-            },
-          }}
-        >
-          <a
-            href={row.original.image}
-            data-fancybox
-            data-caption={row.original.category}
-            className={`size-12 block m-auto ${
-              row.original.image ? "pointer-events-auto" : "pointer-events-none"
-            }`}
-          >
-            <img
-              src={row.original.image || "/images/no-image.jpg"}
-              width={48}
-              height={48}
-              alt={row.getValue("category")}
-              className={`size-full object-contain rounded-md shadow p-2 ${
-                row.original.image ? "hover:opacity-60 cursor-pointer " : ""
-              } `}
-            />
-          </a>
-        </Fancybox>
-      ),
+      cell: ({ row }) => {
+        const [isLoading, setIsLoading] = useState(true);
+        const imageSrc = row.original.image || "/images/no-image.jpg";
+
+        const imageTitle = row.original.category;
+        return (
+          <ImageColumn
+            row={row}
+            imageSrc={imageSrc}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            imageTitle={imageTitle}
+          />
+        );
+      },
     },
     {
       accessorKey: "category",
@@ -200,30 +113,11 @@ export default function CategoryList() {
         let status = row.original.status;
         const id = row.original.id;
         return (
-          <Select
-            value={status}
-            onValueChange={(value) => {
-              handleStatusChange(id, value);
-            }}
-          >
-            <SelectTrigger className="w-[140px] justify-start">
-              {status === "1" ? (
-                <CircleCheck
-                  strokeWidth={2}
-                  className="status-icon text-success"
-                />
-              ) : (
-                <ClipboardPenLine strokeWidth={2} className="status-icon " />
-              )}
-              <SelectValue value={status} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="1">Published</SelectItem>
-                <SelectItem value="2">Draft</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <StatusColumn
+            status={status}
+            id={id}
+            handleStatusChange={handleStatusChange}
+          />
         );
       },
     },
@@ -236,89 +130,14 @@ export default function CategoryList() {
         const values = row.original;
         const id = row.original.id;
         return (
-          <>
-            <div className="flex w-full justify-center items-center gap-3 pe-3">
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className="action-btn"
-                      onClick={() => {
-                        setEditDialogOpen(true);
-                        handleEdit(values);
-                      }}
-                    >
-                      <Pencil className={"size-4"} />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-white text-muted-foreground shadow-md">
-                    <p>Edit</p>
-                  </TooltipContent>
-                </Tooltip>
-
-                {/* <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <div
-                      className="action-btn"
-                      onClick={() => setViewDialogOpen(true)}
-                    >
-                      <Eye className={"size-4"} />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-white text-muted-foreground shadow-md">
-                    <p>View</p>
-                  </TooltipContent>
-                </Tooltip> */}
-              </TooltipProvider>
-
-              <div className="action-btn ">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Trash2 className={"size-4"} />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="mr-1 p-4 w-56"
-                    align="center"
-                    side="left"
-                  >
-                    <h2 className="the-title flex items-start sm:items-center">
-                      <FaTrashAlt className="mr-1" />
-                      Delete the category
-                    </h2>
-                    <p className="the-text mt-2">
-                      Are you sure you want to delete this category?
-                    </p>
-
-                    <div className="mt-4 flex gap-1.5 items-center justify-end">
-                      <Button
-                        type="button"
-                        className="px-2.5 py-1 text-xs h-7"
-                        onClick={() => handleDelete(id)}
-                      >
-                        {isDeleting ? (
-                          <>
-                            <Loader2 className="animate-spin" />
-                          </>
-                        ) : (
-                          "Ok"
-                        )}
-                      </Button>
-
-                      <DropdownMenuItem className="p-0">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="px-2.5 py-1 text-xs h-7"
-                        >
-                          No
-                        </Button>
-                      </DropdownMenuItem>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-          </>
+          <ActionColumn
+            values={values}
+            id={id}
+            setEditDialogOpen={setEditDialogOpen}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+            isDeleting={isDeleting}
+          />
         );
       },
     },
@@ -338,7 +157,7 @@ export default function CategoryList() {
 
   const handleEdit = (values) => {
     setFormError("");
-    const { id, category, status, image } = values;
+    const { id, image } = values;
     setPerId(id);
     if (image) {
       setIsUploaded(true);
@@ -347,77 +166,34 @@ export default function CategoryList() {
       setIsUploaded(false);
       setImage(null);
     }
-    form.reset({
-      category,
-      status,
-    });
+
+    // Filter values dynamically based on formValues keys
+    const filteredValues = Object.keys(formValues).reduce((acc, key) => {
+      if (key in values) {
+        acc[key] = values[key];
+      }
+      return acc;
+    }, {});
+
+    // Reset form with filtered values
+    form.reset(filteredValues);
   };
 
-  const handleStatusChange = async (id, status) => {
-    try {
-      const response = await axios.patch(`${base_url}/category`, {
-        id,
-        status,
-      });
-
-      const result = response.data;
-
-      if (result.success) {
-        getData();
-
-        ShowToaster({
-          type: "success",
-          title: "Status updated !",
-          description: `This category is ${
-            status === "1" ? "now published." : "moved to draft."
-          }`,
-        });
-      }
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.message || error.message || "An error occurred!";
-
-      ShowToaster({
-        type: "error",
-        title: "Error occured !",
-        description: errorMsg,
-      });
-    }
+  const handleStatusChange = (id, status) => {
+    updateStatusApi(id, status, getData, "category");
   };
 
   const handleDelete = async (id) => {
-    setDeleting(true);
-    try {
-      const response = await axios.delete(`${base_url}/category?id=${id}`);
-
-      const result = response.data;
-      if (result.success) {
-        getData();
-
-        ShowToaster({
-          type: "success",
-          title: "Success",
-          description: "Category deleted successfully",
-        });
-      }
-    } catch (error) {
-      const errorMsg =
-        error.response?.data?.message || error.message || "An error occurred!";
-
-      ShowToaster({
-        type: "error",
-        title: "Error occured !",
-        description: errorMsg,
-      });
-    } finally {
-      setDeleting(false);
-    }
+    deleteDataApi(id, setDeleting, getData, "category");
   };
 
   return (
     <>
       <div className="flex justify-between items-center">
-        <h1 className="the-heading">Category</h1>
+        <h1 className="the-heading">
+          Category
+          {/* <span className="ml-3 underline text-primary text-xs font-normal">{data && data?.length} item(s)</span> */}
+        </h1>
         <Button
           onClick={() => {
             setAddDialogOpen(true);
@@ -483,6 +259,7 @@ export default function CategoryList() {
         bulkId={bulkId}
         setBulkId={setBulkId}
         getData={getData}
+        searchData={"category"}
       />
       {/* CATEGORY TABLE */}
     </>

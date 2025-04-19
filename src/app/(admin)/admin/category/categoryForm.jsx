@@ -58,18 +58,6 @@ export default function CategoryForm({
           </FormItem>
         )}
       />
-
-      {/* <div className="space-y-2">
-        <Label>Upload image</Label>
-        <ImageUploader
-          image={image}
-          setImage={setImage}
-          isUploaded={isUploaded}
-          setIsUploaded={setIsUploaded}
-          filename={filename}
-          setFilename={setFilename}
-        />
-      </div> */}
     </>
   );
 }

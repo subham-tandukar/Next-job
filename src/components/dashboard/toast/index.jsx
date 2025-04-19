@@ -7,10 +7,15 @@ export default function ShowToaster({ type = "success", title, description }) {
     error: <IoMdCloseCircle size="1.2rem" />,
   };
 
+  const color = {
+    success: "!text-success",
+    error: "!text-destructive",
+  };
+
   toast(title, {
     icon: icons[type],
     description: description,
     position: "top-right",
-    className: `!text-${type === "success" ? "success" : "destructive"}`,
+    className: color[type],
   });
 }

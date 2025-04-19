@@ -50,6 +50,7 @@ import ConfirmModal from "../modal/confirmModal";
 import axios from "axios";
 import { base_url } from "@/utils/apiUrl";
 import ShowToaster from "../toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function DataTable({
   data,
@@ -62,6 +63,7 @@ export function DataTable({
   bulkId,
   setBulkId,
   getData,
+  searchData,
 }) {
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -206,10 +208,10 @@ export function DataTable({
         </div>
 
         <Input
-          placeholder="Search by category..."
-          value={table.getColumn("category")?.getFilterValue() ?? ""}
+          placeholder={`Search by ${searchData}...`}
+          value={table.getColumn(searchData)?.getFilterValue() ?? ""}
           onChange={(event) =>
-            table.getColumn("category")?.setFilterValue(event.target.value)
+            table.getColumn(searchData)?.setFilterValue(event.target.value)
           }
           className="max-w-sm h-10"
         />
@@ -241,14 +243,24 @@ export function DataTable({
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center pb-10 pt-4"
-                >
-                  <Loader />
-                </TableCell>
-              </TableRow>
+              <>
+                {columns.map((item, index) => (
+                  <TableRow key={index} className="hover:bg-transparent">
+                    {columns.map((item, index) => {
+                      return (
+                        <TableCell key={index}>
+                          {item.accessorKey ===
+                          "select" ? null : item.accessorKey === "image" ? (
+                            <Skeleton className="h-12 w-12 mx-auto rounded-md bg-muted/60" />
+                          ) : (
+                            <Skeleton className="h-10 w-full bg-muted/60" />
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </>
             ) : (
               <>
                 {table.getRowModel().rows?.length ? (
@@ -269,7 +281,7 @@ export function DataTable({
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
+                  <TableRow className="hover:bg-transparent">
                     <TableCell
                       colSpan={columns.length}
                       className="h-24 text-center py-5"
@@ -290,7 +302,7 @@ export function DataTable({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-between gap-4 space-x-2 py-4">
+      <div className="flex items-center justify-between gap-4 space-x-2 py-4 sticky bottom-0 z-10 bg-white">
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}

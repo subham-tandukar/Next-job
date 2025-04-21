@@ -34,6 +34,7 @@ export default function CategoryList() {
   const [filename, setFilename] = useState("");
   const [isUploaded, setIsUploaded] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
@@ -75,7 +76,6 @@ export default function CategoryList() {
       header: () => <div className="text-center">Image</div>,
       width: "80px",
       cell: ({ row }) => {
-        const [isLoading, setIsLoading] = useState(true);
         const imageSrc = row.original.image || "/images/no-image.jpg";
 
         const imageTitle = row.original.category;
